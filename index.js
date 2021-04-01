@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const ObjectID = require("mongodb").ObjectID;
 require("dotenv").config();
 app.use(cors());
 app.use(express.json());
@@ -12,8 +13,38 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
 });
 client.connect((err) => {
-  const collection = client.db(`${process.env.DB_NAME}`).collection("products");
-  // perform actions on the collection object
+  const productsCollection = client
+    .db(`${process.env.DB_NAME}`)
+    .collection("products");
+  const usersOrderCollection = client
+    .db(`${process.env.DB_NAME}`)
+    .collection("user-details");
+  app.get("/allProductsDetails", (req, res) => {
+    productsCollection.find().toArray((err, documents) => {
+      res.send(documents);
+    });
+  });
+  app.delete("delete/:id", (req, res) => {
+    console.log(req.params.id);
+  });
+  app.post("/addBuying", (req, res) => {
+    const buyingDetails = req.body;
+    usersOrderCollection.insertOne(buyingDetails).then((result) => {
+      res.send(result.insertedCount > 0);
+    });
+  });
+  app.get("/customerInfo", (req, res) => {
+    usersOrderCollection.find({}).toArray((err, documents) => {
+      res.send(documents);
+    });
+  });
+  app.post("/addProducts", (req, res) => {
+    const productInfo = req.body;
+    console.log("submitted data", productInfo);
+    productsCollection.insertOne(productInfo).then((result) => {
+      res.send(result.insertedCount > 0);
+    });
+  });
 });
 
 app.get("/", function (req, res) {
