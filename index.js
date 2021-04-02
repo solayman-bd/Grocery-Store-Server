@@ -24,8 +24,13 @@ client.connect((err) => {
       res.send(documents);
     });
   });
-  app.delete("delete/:id", (req, res) => {
+  app.delete("/delete/:id", (req, res) => {
     console.log(req.params.id);
+    productsCollection
+      .deleteOne({ _id: ObjectID(req.params.id) })
+      .then((result) => {
+        res.send(result.deletedCount > 0);
+      });
   });
   app.post("/addBuying", (req, res) => {
     const buyingDetails = req.body;
